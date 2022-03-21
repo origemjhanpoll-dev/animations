@@ -4,32 +4,24 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
-  withDelay,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet, Pressable, Text, View, ViewStyle } from "react-native";
 import {
   GestureDetector,
   Gesture,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Svg, { Circle, Path } from "react-native-svg";
+import { colors, cursor, pivot, position, screen } from "../../Config";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-const { width, height } = Dimensions.get("screen");
-
-//Initial variables of element colors and sizes
-const guide_size = width / 1.2;
-const curso_size = guide_size / 4;
-const guide_color = "#E4E5F0";
-const color = "#5965D4";
-const pivot_size = 10;
 
 export function PanGesture() {
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const inBorder = useSharedValue(false);
+  const translateX = useSharedValue(position.init_screen_cursor.x);
+  const translateY = useSharedValue(position.init_screen_cursor.y);
+  const moved = useSharedValue(false);
   const context = useSharedValue({ x: 0, y: 0 });
 
   const followX = useDerivedValue(() => {
@@ -45,121 +37,134 @@ export function PanGesture() {
       transform: [{ translateX: followX.value }, { translateY: followY.value }],
     };
   });
-  const styleAnimatedGuide = useAnimatedStyle(() => {
-    return {
-      borderWidth: inBorder.value ? withTiming(4) : withTiming(0),
-    };
-  });
-  const styleAnimatedText = useAnimatedStyle(() => ({
-    opacity: inBorder.value ? withDelay(800, withTiming(1)) : withTiming(0),
+  const styleAnimatedPress = useAnimatedStyle(() => ({
+    bottom: moved.value ? withTiming(16) : withTiming(-100),
   }));
 
   //Creating the svg path
-  const animatedProps = useAnimatedProps(() => {
+  const animatedPath = useAnimatedProps(() => {
     const path = `
-    M ${width / 2} ${height / 2} 
-    L ${followX.value + width / 2} ${followY.value + height / 2}
+    M ${position.init_screen.x} ${position.init_screen.y} 
+    L ${followX.value + position.init_cursor}
+     ${followY.value + position.init_cursor}
     `;
     return { d: path };
   });
 
-  //Gesture Settings Pan and Tap
-  const pan = Gesture.Pan()
+  //Gesture Settings Pan
+  const gesture = Gesture.Pan()
     .onStart(() => {
       context.value = { x: translateX.value, y: translateY.value };
     })
     .onUpdate(({ translationX, translationY }) => {
       translateX.value = translationX + context.value.x;
       translateY.value = translationY + context.value.y;
-
-      const distance = Math.sqrt(translateX.value ** 2 + translateY.value ** 2);
-      if (distance > guide_size / 2 - curso_size / 2) {
-        inBorder.value = true;
-      } else {
-        inBorder.value = false;
-      }
     })
     .onEnd(() => {
-      const distance = Math.sqrt(translateX.value ** 2 + translateY.value ** 2);
-      if (distance < guide_size / 2 + curso_size / 2) {
-        translateX.value = 0;
-        translateY.value = 0;
-        inBorder.value = false;
-      }
+      if (translateX.value != 0 || translateY.value != 0) moved.value = true;
     });
-  const tap = Gesture.Tap()
-    .numberOfTaps(2)
-    .onStart(() => {
-      translateX.value = 0;
-      translateY.value = 0;
-      inBorder.value = false;
-    });
-  const gesture = Gesture.Race(pan, tap);
 
   return (
     <GestureHandlerRootView style={{ flex: 1, alignItems: "center" }}>
-      <Animated.Text style={[styles.text, styleAnimatedText]}>
-        Press double click for reset position
-      </Animated.Text>
       <GestureDetector gesture={gesture}>
-        <Animated.View style={styles.container}>
-          <Animated.View style={[styles.guide, styleAnimatedGuide]} />
-          <Svg width={width} height={height} style={styles.svg}>
-            <AnimatedPath
-              animatedProps={animatedProps}
-              fill="transparent"
-              strokeWidth={5}
-              strokeMiterlimit="10"
-              strokeDasharray={10}
-              stroke={color}
-            />
-            <Circle
-              x={width / 2 - pivot_size}
-              y={height / 2 - pivot_size}
-              cx={pivot_size}
-              cy={pivot_size}
-              r={pivot_size}
-              fill={color}
-            />
-          </Svg>
-          <Animated.View style={[styles.cursor, styleAnimatedCursor]} />
-        </Animated.View>
+        <Svg width={screen.width} height={screen.height}>
+          <Pointer style={styleAnimatedCursor} />
+          <Pivot
+            x={position.init_screen.x - position.init_pivot}
+            y={position.init_screen.y - position.init_pivot}
+          />
+          <AnimatedPath
+            animatedProps={animatedPath}
+            fill="transparent"
+            strokeWidth={5}
+            strokeMiterlimit="10"
+            strokeDasharray={10}
+            stroke={colors.black}
+          />
+        </Svg>
       </GestureDetector>
+      <ResetPress
+        style={styleAnimatedPress}
+        onPress={() => {
+          translateX.value = position.init_screen_cursor.x;
+          translateY.value = position.init_screen_cursor.y;
+          moved.value = false;
+        }}
+      />
     </GestureHandlerRootView>
   );
 }
+
+export const Pointer = ({ style }: { style?: ViewStyle }) => {
+  return (
+    <Animated.View style={[styles.cursor_container, style]}>
+      <View style={styles.cursor} />
+    </Animated.View>
+  );
+};
+
+const Pivot = ({ x, y }: { x: number; y: number }) => {
+  return (
+    <View
+      style={[
+        styles.pivot,
+        {
+          transform: [{ translateX: x }, { translateY: y }],
+        },
+      ]}
+    />
+  );
+};
+
+//Reset settings position pan
+const ResetPress = ({
+  style,
+  onPress,
+}: {
+  style: ViewStyle;
+  onPress(): void;
+}) => {
+  return (
+    <Animated.View style={[style, styles.pressable]}>
+      <Pressable style={{ padding: 16 }} onPress={onPress}>
+        <Text style={[styles.text]}>Reset position</Text>
+      </Pressable>
+    </Animated.View>
+  );
+};
 const styles = StyleSheet.create({
-  container: {
-    justifyContent: "center",
-    alignItems: "center",
-    flex: 1,
+  text: {
+    color: colors.black,
+    fontSize: 16,
+    fontWeight: "700",
   },
-  guide: {
+  pivot: {
     position: "absolute",
-    width: guide_size,
-    height: guide_size,
-    borderColor: color,
-    backgroundColor: guide_color,
+    backgroundColor: colors.red,
+    width: pivot.size,
+    height: pivot.size,
+    borderRadius: cursor.size,
+  },
+  pressable: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 16,
+    borderWidth: 2,
+  },
+  cursor_container: {
+    width: cursor.size,
+    height: cursor.size,
+    borderWidth: 4,
+    borderRadius: cursor.size,
     justifyContent: "center",
     alignItems: "center",
+    position: "absolute",
   },
   cursor: {
-    width: curso_size,
-    height: curso_size,
-    backgroundColor: color,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  svg: {
-    position: "absolute",
-  },
-  text: {
-    position: "absolute",
-    marginTop: 58,
-    color: color,
-    fontSize: 18,
-    fontWeight: "700",
+    width: cursor.size - 16,
+    height: cursor.size - 16,
+    backgroundColor: colors.black,
+    borderRadius: cursor.size - 16,
   },
 });
