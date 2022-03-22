@@ -15,6 +15,7 @@ import {
 } from "react-native-gesture-handler";
 import Svg, { Circle, Path } from "react-native-svg";
 import { colors, cursor, pivot, position, screen } from "../../Config";
+import { Pivot } from "../../Components/Pivot";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -79,7 +80,7 @@ export function PanGesture() {
             strokeWidth={5}
             strokeMiterlimit="10"
             strokeDasharray={10}
-            stroke={colors.black}
+            stroke={colors.primary}
           />
         </Svg>
       </GestureDetector>
@@ -103,19 +104,6 @@ export const Pointer = ({ style }: { style?: ViewStyle }) => {
   );
 };
 
-const Pivot = ({ x, y }: { x: number; y: number }) => {
-  return (
-    <View
-      style={[
-        styles.pivot,
-        {
-          transform: [{ translateX: x }, { translateY: y }],
-        },
-      ]}
-    />
-  );
-};
-
 //Reset settings position pan
 const ResetPress = ({
   style,
@@ -134,28 +122,23 @@ const ResetPress = ({
 };
 const styles = StyleSheet.create({
   text: {
-    color: colors.black,
+    color: colors.primary,
     fontSize: 16,
     fontWeight: "700",
-  },
-  pivot: {
-    position: "absolute",
-    backgroundColor: colors.red,
-    width: pivot.size,
-    height: pivot.size,
-    borderRadius: cursor.size,
   },
   pressable: {
     position: "absolute",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
+    borderColor: colors.primary,
     borderWidth: 2,
   },
   cursor_container: {
     width: cursor.size,
     height: cursor.size,
     borderWidth: 4,
+    borderColor: colors.primary,
     borderRadius: cursor.size,
     justifyContent: "center",
     alignItems: "center",
@@ -164,7 +147,7 @@ const styles = StyleSheet.create({
   cursor: {
     width: cursor.size - 16,
     height: cursor.size - 16,
-    backgroundColor: colors.black,
+    backgroundColor: colors.primary,
     borderRadius: cursor.size - 16,
   },
 });
