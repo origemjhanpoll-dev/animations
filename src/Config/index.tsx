@@ -31,4 +31,13 @@ export const position = {
   },
 };
 
-export const colors = { black: "#1F1F1F", yellow: "#fff232", red: "#FF3232" };
+export const colors = {
+  primary: "#fece2f",
+  secondary: "#40340C",
+  tertiary: "#FF3232",
+};
+
+export const illustration = {
+  plant1: require("../Image/illustration1.png"),
+  plant2: require("../Image/illustration2.png"),
+};

@@ -5,8 +5,9 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
-import { StyleSheet, View, ViewStyle } from "react-native";
+import { StyleSheet, View, ViewStyle, Text } from "react-native";
 import {
   GestureDetector,
   Gesture,
@@ -14,6 +15,7 @@ import {
 } from "react-native-gesture-handler";
 import Svg, { Path } from "react-native-svg";
 import { colors, cursor, pivot, position, screen } from "../../Config";
+import { Pivot } from "../../Components/Pivot";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -34,12 +36,22 @@ export function TapGesture() {
     };
   });
 
+  const styleAnimatedText = useAnimatedStyle(() => {
+    const visibled =
+      translateX.value == position.init_screen_cursor.x &&
+      translateY.value == position.init_screen_cursor.y;
+    return {
+      opacity: visibled ? withTiming(0) : withTiming(1),
+    };
+  });
+
   const animatedPath = useAnimatedProps(() => {
     const path = `
     M ${position.init_screen.x} ${pivot.size * 4 + position.init_pivot} 
     L ${followX.value + position.init_cursor}
-     ${followY.value + position.init_cursor}
-    L ${position.init_screen.x} ${screen.height - pivot.size * 4}
+      ${followY.value + position.init_cursor}
+    L ${position.init_screen.x} 
+      ${screen.height - pivot.size * 4 + pivot.size / 2}
     `;
     return { d: path };
   });
@@ -70,7 +82,7 @@ export function TapGesture() {
             strokeWidth={5}
             strokeMiterlimit="10"
             strokeDasharray={10}
-            stroke={colors.black}
+            stroke={colors.primary}
           />
         </Svg>
       </GestureDetector>
@@ -79,6 +91,9 @@ export function TapGesture() {
         x={position.init_screen_pivot.x}
         y={screen.height - pivot.size * 4}
       />
+      <Animated.View style={[styles.content_text, styleAnimatedText]}>
+        <Text style={styles.text}>Double tap for reset position</Text>
+      </Animated.View>
     </GestureHandlerRootView>
   );
 }
@@ -91,32 +106,13 @@ export const Pointer = ({ style }: { style?: ViewStyle }) => {
   );
 };
 
-const Pivot = ({ x, y }: { x: number; y: number }) => {
-  return (
-    <View
-      style={[
-        styles.pivot,
-        {
-          transform: [{ translateX: x }, { translateY: y }],
-        },
-      ]}
-    />
-  );
-};
-
 const styles = StyleSheet.create({
-  pivot: {
-    position: "absolute",
-    backgroundColor: colors.red,
-    width: pivot.size,
-    height: pivot.size,
-    borderRadius: cursor.size,
-  },
   cursor_container: {
     width: cursor.size,
     height: cursor.size,
     borderWidth: 4,
     borderRadius: cursor.size,
+    borderColor: colors.primary,
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
@@ -124,7 +120,17 @@ const styles = StyleSheet.create({
   cursor: {
     width: cursor.size - 16,
     height: cursor.size - 16,
-    backgroundColor: colors.black,
+    backgroundColor: colors.primary,
     borderRadius: cursor.size - 16,
+  },
+  content_text: {
+    position: "absolute",
+    alignSelf: "center",
+    bottom: 20,
+  },
+  text: {
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: "700",
   },
 });
