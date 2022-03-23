@@ -46,9 +46,7 @@ export function PinchGesture() {
   return (
     <GestureHandlerRootView style={{ flex: 1, alignItems: "center" }}>
       <GestureDetector gesture={gesture}>
-        <View style={styles.container}>
-          <Pointer style={animatedStyle} />
-        </View>
+        <Pointer style={animatedStyle} />
       </GestureDetector>
       <Animated.Image
         style={[styles.image1, animatedImage]}
@@ -70,8 +68,10 @@ export function PinchGesture() {
 
 export const Pointer = ({ style }: { style?: ViewStyle }) => {
   return (
-    <Animated.View style={[styles.cursor_container, style]}>
-      <View style={styles.cursor} />
+    <Animated.View style={styles.container}>
+      <Animated.View style={[styles.cursor_container, style]}>
+        <View style={styles.cursor} />
+      </Animated.View>
     </Animated.View>
   );
 };

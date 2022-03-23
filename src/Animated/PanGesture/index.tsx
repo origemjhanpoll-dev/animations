@@ -67,23 +67,23 @@ export function PanGesture() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, alignItems: "center" }}>
-      <GestureDetector gesture={gesture}>
-        <Svg width={screen.width} height={screen.height}>
+      <Svg width={screen.width} height={screen.height}>
+        <Pivot
+          x={position.init_screen.x - position.init_pivot}
+          y={position.init_screen.y - position.init_pivot}
+        />
+        <GestureDetector gesture={gesture}>
           <Pointer style={styleAnimatedCursor} />
-          <Pivot
-            x={position.init_screen.x - position.init_pivot}
-            y={position.init_screen.y - position.init_pivot}
-          />
-          <AnimatedPath
-            animatedProps={animatedPath}
-            fill="transparent"
-            strokeWidth={5}
-            strokeMiterlimit="10"
-            strokeDasharray={10}
-            stroke={colors.primary}
-          />
-        </Svg>
-      </GestureDetector>
+        </GestureDetector>
+        <AnimatedPath
+          animatedProps={animatedPath}
+          fill="transparent"
+          strokeWidth={5}
+          strokeMiterlimit="10"
+          strokeDasharray={10}
+          stroke={colors.primary}
+        />
+      </Svg>
       <ResetPress
         style={styleAnimatedPress}
         onPress={() => {
