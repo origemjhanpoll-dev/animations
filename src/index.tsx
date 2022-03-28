@@ -1,4 +1,4 @@
-export { PanGesture } from "./Animated/PanGesture";
-export { TapGesture } from "./Animated/TapGesture";
-export { PinchGesture } from "./Animated/PinchGesture";
-export { RotationGesture } from "./Animated/RotationGesture";
+export { PanGesture } from "./Pages/PanGesture";
+export { TapGesture } from "./Pages/TapGesture";
+export { PinchGesture } from "./Pages/PinchGesture";
+export { RotationGesture } from "./Pages/RotationGesture";
